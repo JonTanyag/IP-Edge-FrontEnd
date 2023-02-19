@@ -10,6 +10,13 @@ const getEmployeeService = async (page: number = 1, pageSize: number = 20) => {
 
 export {getEmployeeService}
 
+const searchEmployeeService = async (searchTerm: string) => {
+    const data = await fetch(`${url}/search?query=${searchTerm}`);
+    return await data.json();
+}
+
+export {searchEmployeeService}
+
 const deleteEmployeeService = async (id: number) => {
     await fetch(`${url}/`+id, {
         method: 'DELETE'

@@ -3,7 +3,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Employee } from '../shared/models/employee';
 import { Role } from '../shared/models/role';
-import { deleteEmployeeService, getEmployeeService } from '../shared/service/employee.service';
+import { deleteEmployeeService, getEmployeeService, searchEmployeeService } from '../shared/service/employee.service';
 import { roleService } from '../shared/service/role.service';
 import EmployeeForm from './employee.component';
 
@@ -88,6 +88,16 @@ function HomePage() {
         console.log('selected role: ', event.target.value)
     };
 
+    const handleSearchChange = async (searchTerm: string) => {
+        if (searchTerm !== '') {
+            const data = await searchEmployeeService(searchTerm);
+            setEmployee(data);
+        }else {
+            const data = await getEmployeeService();
+            setEmployee(data);
+        }
+    }
+
 
     return (
         <div className='container'>
@@ -96,7 +106,12 @@ function HomePage() {
                     <h2>Employee Tracking</h2>
                 </div>
             </div>
-
+            <div className='search-area'>
+                <label>
+                    Search:
+                    <input placeholder='first name, lastname or role' type="text" onChange={(e) => handleSearchChange(e.target.value)} />
+                </label>
+            </div>
             <div className='tableDiv'>
                 <table>
                     <thead>
@@ -129,7 +144,7 @@ function HomePage() {
                 <div className='pageSize'>
                     <label>Page Size: </label>
                     <select value={selectedPageSize} onChange={handleSelectPageSizeChange}>
-                        <option value="select">Select Role</option>
+                        <option value="select">Select Page Size</option>
                         <option value="3">3</option>
                         <option value="5">5</option>
                         <option value="10">10</option>
