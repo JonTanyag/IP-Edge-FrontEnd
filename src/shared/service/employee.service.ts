@@ -1,3 +1,4 @@
+import { AddEmployeeCommand } from "../models/addemployeeCommand";
 
 const baseUrl = 'https://localhost:7291/api/';
 const url = `${baseUrl}Employee`
@@ -26,3 +27,19 @@ const deleteEmployeeService = async (id: number) => {
 }
 
 export {deleteEmployeeService}
+
+const addEmployeeService = async (employeePayload: AddEmployeeCommand) => {
+    await fetch(`${url}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(
+            employeePayload
+        )
+    }).catch((error) => {
+        console.log(error);
+    });
+}
+
+export {addEmployeeService}

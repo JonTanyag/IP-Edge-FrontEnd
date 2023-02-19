@@ -1,9 +1,10 @@
 import axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { AddEmployeeCommand } from '../shared/models/addemployeeCommand';
 import { Employee } from '../shared/models/employee';
 import { Role } from '../shared/models/role';
-import { deleteEmployeeService, getEmployeeService, searchEmployeeService } from '../shared/service/employee.service';
+import { addEmployeeService, deleteEmployeeService, getEmployeeService, searchEmployeeService } from '../shared/service/employee.service';
 import { roleService } from '../shared/service/role.service';
 import EmployeeForm from './employee.component';
 
@@ -15,11 +16,14 @@ interface EmployeeListProps {
 function HomePage() {
     const [employees, setEmployee] = useState<Employee[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
+    const [employeePayload, setEmployeePayload] = useState({
+        firstName: "",
+        lastName: "",
+        extension: "",
+        roleId: null
+    });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [extension, setExtension] = useState('');
     const [selectedRole, setSelectedRole] = useState(0);
     const [selectedPageSize, setSelectedPageSize] = useState('')
 
@@ -54,16 +58,21 @@ function HomePage() {
         setIsModalOpen(false);
     };
 
-    const handleModalSave = () => {
-        // TODO
-    }
+    const handleSubmit = async () => {
+        // TODO: why POST method is returning 415 Status code 
+        var newPayload = {
+            firstName: employeePayload.firstName,
+            lastName: employeePayload.lastName,
+            extension: employeePayload.extension,
+            roleId: selectedRole,
+        }
 
-    const handleChange = () => {
-        // TODO
-    }
-
-    const handleSubmit = () => {
-        // TODO
+        const payload = new AddEmployeeCommand(newPayload);
+        try {
+            const data = await addEmployeeService(payload);
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     const handleDeleteButtonClick = async (id: any) => {
@@ -92,7 +101,7 @@ function HomePage() {
         if (searchTerm !== '') {
             const data = await searchEmployeeService(searchTerm);
             setEmployee(data);
-        }else {
+        } else {
             const data = await getEmployeeService();
             setEmployee(data);
         }
@@ -116,7 +125,6 @@ function HomePage() {
                 <table>
                     <thead>
                         <tr>
-                            <th>Id</th>
                             <th>Employee Number</th>
                             <th>First Name</th>
                             <th>Last Name</th>
@@ -129,7 +137,6 @@ function HomePage() {
                     <tbody>
                         {employees.map(item => (
                             <tr key={item.id}>
-                                <td>{item.id}</td>
                                 <td>{item.employeeNumber}</td>
                                 <td>{item.firstName}</td>
                                 <td>{item.lastName}</td>
@@ -167,41 +174,44 @@ function HomePage() {
             {isModalOpen && (
                 <div className='modal-overlay'>
                     <div className="modal">
-                        <div className="modal-content">
-                            <h2>Add Employee</h2>
-                            <label>
-                                First Name:
-                                <input type="text" onChange={handleChange} />
-                            </label>
-                            <br />
-                            <label>
-                                Last Name:
-                                <input type="text" onChange={handleChange} />
-                            </label>
-                            <br />
-                            <label>
-                                Extension:
-                                <input type="text" onChange={handleChange} />
-                            </label>
-                            <br />
-                            <label>
-                                Role:
-                                <select value={selectedRole} onChange={handleSelectChange}>
-                                    <option value="">Select Role</option>
-                                    {roles.map(role => (
-                                        <option key={role.id} value={role.id}>{role.roleName}</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <div className="button-container">
-                                <button onClick={handleModalSave}>Save</button>
-                                <button onClick={handleModalClose}>Cancel</button>
+                        <form className="input-group vertical" onSubmit={handleSubmit}>
+                            <div className="modal-content">
+                                <h2>Add Employee</h2>
+                                <label>
+                                    First Name:
+                                    <input type="text" value={employeePayload?.firstName} onChange={(e) => setEmployeePayload({ ...employeePayload, firstName: e.target.value })} />
+                                </label>
+                                <br />
+                                <label>
+                                    Last Name:
+                                    <input type="text" value={employeePayload?.lastName} onChange={(e) => setEmployeePayload({ ...employeePayload, lastName: e.target.value })} />
+                                </label>
+                                <br />
+                                <label>
+                                    Extension:
+                                    <input type="number" value={employeePayload?.extension} onChange={(e) => setEmployeePayload({ ...employeePayload, extension: e.target.value })} />
+                                </label>
+                                <br />
+                                <label>
+                                    Role:
+                                    <select value={selectedRole} onChange={handleSelectChange}>
+                                        <option value="">Select Role</option>
+                                        {roles.map(role => (
+                                            <option key={role.id} value={role.id}>{role.roleName}</option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <div className="button-container">
+                                    <button type="submit">Save</button>
+                                    <button onClick={handleModalClose}>Cancel</button>
+                                </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     )
 }
 
